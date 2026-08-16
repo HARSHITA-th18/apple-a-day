@@ -2,16 +2,14 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Register from "./pages/auth/Register";
 import Login from "./pages/auth/Login";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-
-
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-
 import { observeAuthState } from "./firebase/auth";
 import { getUserProfile } from "./firebase/firestore";
 import { setUser, clearUser, setLoading } from "./redux/slices/authSlice";
 import Home from "./pages/user/Home";
 import Unauthorized from "./pages/auth/Unauthorized";
+import { Navigate } from "react-router-dom";
 
 import Admin from "./pages/admin/Admin";
 
@@ -46,10 +44,7 @@ function App() {
     <BrowserRouter>
       <Routes>
 
-        <Route
-          path="/"
-          element={<h1>Apple A Day</h1>}
-        />
+        <Route path="/" element={<Navigate to="/login" replace />} />
 
         <Route
           path="/register"
