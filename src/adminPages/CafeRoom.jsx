@@ -92,25 +92,25 @@ function CafeRoom() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-[#fbf9f5]">
 
       {/* Header */}
-      <header className="border-b border-stone-200 bg-white px-6 py-5 lg:px-8">
-        <p className="text-xs text-stone-400">Café Services</p>
+      <header className="border-b border-[#e6e1d7] bg-[#f4efe6] px-6 py-5 lg:px-8">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#526b59]">Café Services</p>
 
         <h1 className="mt-1 text-2xl font-bold text-stone-900">
           Café Room
         </h1>
 
-        <p className="text-sm text-stone-500">
+        <p className="text-sm font-medium text-stone-600">
           Manage private room bookings.
         </p>
       </header>
 
-      <main className="grid gap-6 p-6 lg:grid-cols-3 lg:p-8">
+      <main className="grid gap-6 p-4 sm:p-6 lg:grid-cols-3 lg:p-8">
 
         {/* ================= NEW BOOKING ================= */}
-        <section className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
+        <section className="rounded-xl border border-[#e6e1d7] bg-white p-5 shadow-sm">
 
           <h2 className="text-lg font-semibold text-stone-900">
             New Booking

@@ -1,248 +1,176 @@
-import { useState } from "react"
-import { useDispatch, useSelector } from "react-redux"
+import React, { useState, useEffect } from "react";
+import { db } from "../firebase";
 import {
-  addMenuItem,
-  toggleMenuAvailability,
-} from "../redux/menuSlice"
-import PageHeader from "../components/PageHeader"
+  collection,
+  onSnapshot,
+  doc,
+  updateDoc,
+  addDoc,
+} from "firebase/firestore";
 
-function MenuManagement() {
-  const dispatch = useDispatch()
-  const items = useSelector((state) => state.menu)
-
-  const [search, setSearch] = useState("")
-  const [category, setCategory] = useState("ALL")
-  const [showForm, setShowForm] = useState(false)
-
-  const [form, setForm] = useState({
+export default function MenuManagement() {
+  const [menuItems, setMenuItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newItem, setNewItem] = useState({
     name: "",
-    category: "",
+    category: "Beverages",
     price: "",
-    stock: "",
-  })
+    available: true,
+  });
 
-  const categories = [
-    "ALL",
-    ...new Set(items.map((item) => item.category)),
-  ]
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      collection(db, "menu"),
+      (snapshot) => {
+        const items = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        }));
+        setMenuItems(items);
+        setLoading(false);
+      },
+      (err) => {
+        console.error("Error fetching menu items: ", err);
+        setLoading(false);
+      }
+    );
+    return () => unsubscribe();
+  }, []);
 
-  const filteredItems = items.filter((item) => {
-    const searchMatch = item.name
-      .toLowerCase()
-      .includes(search.toLowerCase())
-
-    const categoryMatch =
-      category === "ALL" || item.category === category
-
-    return searchMatch && categoryMatch
-  })
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-
-    if (!form.name || !form.category || !form.price || !form.stock) {
-      alert("Please fill all fields")
-      return
+  const handleToggleStock = async (itemId, currentAvailability) => {
+    try {
+      const itemRef = doc(db, "menu", itemId);
+      await updateDoc(itemRef, { available: !currentAvailability });
+    } catch (err) {
+      console.error("Error toggling stock status: ", err);
     }
+  };
 
-    dispatch(
-      addMenuItem({
-        id: `MENU${Date.now()}`,
-        name: form.name,
-        description: "New menu item",
-        category: form.category,
-        price: Number(form.price),
-        stock: Number(form.stock),
-        available: Number(form.stock) > 0,
-        image: "",
-      })
-    )
+  const handleAddItem = async (e) => {
+    e.preventDefault();
+    if (!newItem.name || !newItem.price) return;
 
-    setForm({
-      name: "",
-      category: "",
-      price: "",
-      stock: "",
-    })
-
-    setShowForm(false)
-  }
+    try {
+      await addDoc(collection(db, "menu"), {
+        name: newItem.name,
+        category: newItem.category,
+        price: Number(newItem.price),
+        available: newItem.available,
+      });
+      setNewItem({ name: "", category: "Beverages", price: "", available: true });
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error("Error adding item: ", err);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="p-4 sm:p-6 space-y-6 max-w-6xl mx-auto bg-[#fbf9f5] min-h-screen">
+      <div className="flex items-center justify-between border-b border-stone-200 pb-4">
+        <h1 className="text-2xl font-bold text-stone-900">Menu & Stock Management</h1>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="px-4 py-2 bg-[#1a382b] text-white rounded-lg text-sm font-semibold hover:bg-[#274c3b] shadow-sm transition-colors"
+        >
+          + Add New Item
+        </button>
+      </div>
 
-      <PageHeader
-        eyebrow="Café Management"
-        title="Menu Management"
-        description="Manage menu items and their availability."
-      />
+      {loading ? (
+        <div className="text-center py-12 text-stone-500 font-medium">Loading menu...</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {menuItems.map((item) => (
+            <div
+              key={item.id}
+              className="bg-white border border-[#e6e1d7] rounded-xl p-4 shadow-sm space-y-3 flex flex-col justify-between"
+            >
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-stone-900 text-lg">{item.name}</h3>
+                  <span className="text-xs font-semibold bg-stone-100 text-stone-600 px-2 py-0.5 rounded">
+                    {item.category}
+                  </span>
+                </div>
+                <p className="text-stone-700 font-medium text-sm">₹{item.price}</p>
+              </div>
 
-      <main className="p-6 lg:p-8">
+              <div className="flex items-center justify-between pt-3 border-t border-stone-100">
+                <span
+                  className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
+                    item.available !== false
+                      ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                      : "bg-red-50 text-red-800 border-red-200"
+                  }`}
+                >
+                  {item.available !== false ? "In Stock" : "Out of Stock"}
+                </span>
 
-        {/* Search */}
-        <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-stone-200 bg-white p-4 md:flex-row">
-
-          <input
-            placeholder="Search menu item..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 rounded-xl border border-stone-200 px-4 py-2.5 text-sm"
-          />
-
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="rounded-xl border border-stone-200 px-4 py-2.5 text-sm"
-          >
-            {categories.map((cat) => (
-              <option key={cat}>{cat}</option>
-            ))}
-          </select>
-
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="rounded-xl bg-stone-900 px-5 py-2.5 text-sm font-semibold text-white"
-          >
-            + Add Item
-          </button>
-
-        </div>
-
-        {/* Add Item Form */}
-        {showForm && (
-          <form
-            onSubmit={handleSubmit}
-            className="mb-6 rounded-2xl border border-stone-200 bg-white p-5"
-          >
-            <h2 className="mb-4 font-semibold text-stone-900">
-              Add New Menu Item
-            </h2>
-
-            <div className="grid gap-3 md:grid-cols-4">
-
-              <input
-                placeholder="Item name"
-                value={form.name}
-                onChange={(e) =>
-                  setForm({ ...form, name: e.target.value })
-                }
-                className="rounded-xl border border-stone-200 px-4 py-2.5 text-sm"
-              />
-
-              <input
-                placeholder="Category"
-                value={form.category}
-                onChange={(e) =>
-                  setForm({ ...form, category: e.target.value })
-                }
-                className="rounded-xl border border-stone-200 px-4 py-2.5 text-sm"
-              />
-
-              <input
-                type="number"
-                placeholder="Price"
-                value={form.price}
-                onChange={(e) =>
-                  setForm({ ...form, price: e.target.value })
-                }
-                className="rounded-xl border border-stone-200 px-4 py-2.5 text-sm"
-              />
-
-              <input
-                type="number"
-                placeholder="Stock"
-                value={form.stock}
-                onChange={(e) =>
-                  setForm({ ...form, stock: e.target.value })
-                }
-                className="rounded-xl border border-stone-200 px-4 py-2.5 text-sm"
-              />
-
+                <button
+                  type="button"
+                  onClick={() => handleToggleStock(item.id, item.available !== false)}
+                  className="px-3 py-1.5 text-xs font-semibold text-stone-700 bg-stone-100 border border-stone-300 rounded-lg hover:bg-stone-200 transition-colors"
+                >
+                  Toggle Stock
+                </button>
+              </div>
             </div>
+          ))}
+        </div>
+      )}
 
-            <div className="mt-4 flex gap-2">
-              <button
-                type="submit"
-                className="rounded-xl bg-stone-900 px-5 py-2.5 text-sm font-semibold text-white"
-              >
-                Add Item
-              </button>
-
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+          <form
+            onSubmit={handleAddItem}
+            className="bg-white p-6 rounded-xl border border-stone-200 shadow-xl max-w-sm w-full space-y-4"
+          >
+            <h2 className="text-lg font-bold text-stone-900">Add Menu Item</h2>
+            <input
+              type="text"
+              placeholder="Item Name"
+              value={newItem.name}
+              onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+              className="w-full px-3 py-2 border rounded-lg text-sm bg-stone-50 focus:outline-none"
+              required
+            />
+            <input
+              type="number"
+              placeholder="Price (₹)"
+              value={newItem.price}
+              onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
+              className="w-full px-3 py-2 border rounded-lg text-sm bg-stone-50 focus:outline-none"
+              required
+            />
+            <select
+              value={newItem.category}
+              onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
+              className="w-full px-3 py-2 border rounded-lg text-sm bg-stone-50 focus:outline-none"
+            >
+              <option value="Beverages">Beverages</option>
+              <option value="Snacks">Snacks</option>
+              <option value="Meals">Meals</option>
+              <option value="Desserts">Desserts</option>
+            </select>
+            <div className="flex justify-end gap-2 pt-2">
               <button
                 type="button"
-                onClick={() => setShowForm(false)}
-                className="rounded-xl border border-stone-200 px-5 py-2.5 text-sm"
+                onClick={() => setIsModalOpen(false)}
+                className="px-4 py-2 text-xs font-semibold text-stone-600 bg-stone-100 rounded-lg"
               >
                 Cancel
               </button>
+              <button
+                type="submit"
+                className="px-4 py-2 text-xs font-semibold text-white bg-[#1a382b] rounded-lg"
+              >
+                Save Item
+              </button>
             </div>
           </form>
-        )}
-
-        {/* Items */}
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-
-          {filteredItems.map((item) => (
-            <div
-              key={item.id}
-              className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm"
-            >
-
-              <div className="flex items-start justify-between">
-                <div>
-                  <h2 className="font-semibold text-stone-900">
-                    {item.name}
-                  </h2>
-
-                  <p className="mt-1 text-xs text-stone-400">
-                    {item.category}
-                  </p>
-                </div>
-
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                    item.available
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
-                  }`}
-                >
-                  {item.available ? "Available" : "Unavailable"}
-                </span>
-              </div>
-
-              <div className="mt-5 flex items-center justify-between">
-
-                <div>
-                  <p className="text-lg font-bold">
-                    ₹{item.price}
-                  </p>
-
-                  <p className="text-xs text-stone-400">
-                    Stock: {item.stock}
-                  </p>
-                </div>
-
-                <button
-                  onClick={() =>
-                    dispatch(toggleMenuAvailability(item.id))
-                  }
-                  className="rounded-lg border border-stone-200 px-3 py-2 text-xs font-semibold"
-                >
-                  {item.available
-                    ? "Mark Unavailable"
-                    : "Make Available"}
-                </button>
-
-              </div>
-
-            </div>
-          ))}
-
         </div>
-
-      </main>
+      )}
     </div>
-  )
+  );
 }
-
-export default MenuManagement;

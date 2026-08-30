@@ -1,199 +1,62 @@
-import { Link } from "react-router-dom"
-import {
-  dummyDashboardStats,
-  dummyOrders,
-} from "../data/adminDummyData"
+import React, { useState, useEffect } from "react";
+import { db } from "../firebase";
+import { collection, onSnapshot } from "firebase/firestore";
 
-import PageHeader from "../components/PageHeader"
-import StatCard from "../components/StatCard"
-import StatusBadge from "../components/StatusBadge"
+export default function Dashboard() {
+  const [stats, setStats] = useState({
+    totalRevenue: 0,
+    activeOrders: 0,
+    completedOrders: 0,
+  });
 
-function Dashboard() {
-  const stats = dummyDashboardStats
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, "orders"), (snapshot) => {
+      let revenue = 0;
+      let active = 0;
+      let completed = 0;
 
-  const recentOrders = dummyOrders.slice(0, 5)
+      snapshot.docs.forEach((docItem) => {
+        const data = docItem.data();
+        const amt = Number(data.total || data.totalAmount || 0);
+        revenue += amt;
+
+        if (data.status === "COMPLETED") {
+          completed += 1;
+        } else {
+          active += 1;
+        }
+      });
+
+      setStats({
+        totalRevenue: revenue,
+        activeOrders: active,
+        completedOrders: completed,
+      });
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="p-4 sm:p-6 space-y-6 max-w-6xl mx-auto bg-[#fbf9f5] min-h-screen">
+      <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">Café Analytics & Metrics</h1>
 
-      <PageHeader
-        eyebrow="Overview"
-        title="Dashboard"
-        description="Welcome back. Here's what's happening today."
-      />
-
-
-      <main className="p-6 lg:p-8">
-
-        {/* Stats */}
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-
-          <StatCard
-            title="Total Orders"
-            value={stats.totalOrders}
-            description="Today's orders"
-          />
-
-          <StatCard
-            title="Revenue"
-            value={`₹${stats.todaysRevenue}`}
-            description="Today's revenue"
-          />
-
-          <StatCard
-            title="Pending"
-            value={stats.pendingOrders}
-            description="Orders waiting"
-          />
-
-          <StatCard
-            title="Room Bookings"
-            value={stats.cafeRoomBookings}
-            description="Café room bookings"
-          />
-
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="bg-white border border-[#e6e1d7] rounded-xl p-5 shadow-sm space-y-1">
+          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Total Revenue</p>
+          <p className="text-2xl font-bold text-emerald-800">₹{stats.totalRevenue}</p>
         </div>
 
-
-        {/* Main grid */}
-
-        <div className="mt-6 grid gap-6 lg:grid-cols-3">
-
-          {/* Recent Orders */}
-
-          <div className="rounded-2xl border border-stone-200 bg-white shadow-sm lg:col-span-2">
-
-            <div className="flex items-center justify-between border-b border-stone-100 p-5">
-
-              <div>
-                <h2 className="font-semibold text-stone-900">
-                  Recent Orders
-                </h2>
-
-                <p className="mt-1 text-xs text-stone-400">
-                  Latest customer orders
-                </p>
-              </div>
-
-              <Link
-                to="/admin/orders"
-                className="text-xs font-semibold text-stone-700 hover:underline"
-              >
-                View all
-              </Link>
-
-            </div>
-
-
-            <div className="divide-y divide-stone-100">
-
-              {recentOrders.map((order) => (
-
-                <div
-                  key={order.id}
-                  className="flex items-center justify-between gap-4 p-5"
-                >
-
-                  <div className="flex items-center gap-3">
-
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-stone-900 text-xs font-bold text-white">
-                      {order.token}
-                    </div>
-
-                    <div>
-
-                      <p className="text-sm font-semibold text-stone-900">
-                        {order.customer.name}
-                      </p>
-
-                      <p className="text-xs text-stone-400">
-                        {order.id}
-                      </p>
-
-                    </div>
-
-                  </div>
-
-
-                  <div className="flex items-center gap-4">
-
-                    <span className="hidden text-sm font-semibold text-stone-900 sm:block">
-                      ₹{order.total}
-                    </span>
-
-                    <StatusBadge status={order.status} />
-
-                  </div>
-
-                </div>
-
-              ))}
-
-            </div>
-
-          </div>
-
-
-          {/* Quick Actions */}
-
-          <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-
-            <h2 className="font-semibold text-stone-900">
-              Quick Actions
-            </h2>
-
-            <p className="mt-1 text-xs text-stone-400">
-              Frequently used sections
-            </p>
-
-
-            <div className="mt-5 space-y-2">
-
-              <QuickAction
-                title="Manage Orders"
-                path="/admin/orders"
-              />
-
-              <QuickAction
-                title="Update Menu"
-                path="/admin/menu"
-              />
-
-              <QuickAction
-                title="Check Café Room"
-                path="/admin/cafe-room"
-              />
-
-              <QuickAction
-                title="View Reviews"
-                path="/admin/reviews"
-              />
-
-            </div>
-
-          </div>
-
+        <div className="bg-white border border-[#e6e1d7] rounded-xl p-5 shadow-sm space-y-1">
+          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Active Orders</p>
+          <p className="text-2xl font-bold text-sky-800">{stats.activeOrders}</p>
         </div>
 
-      </main>
-
+        <div className="bg-white border border-[#e6e1d7] rounded-xl p-5 shadow-sm space-y-1">
+          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Completed Orders</p>
+          <p className="text-2xl font-bold text-stone-800">{stats.completedOrders}</p>
+        </div>
+      </div>
     </div>
-  )
+  );
 }
-
-
-function QuickAction({ title, path }) {
-  return (
-    <Link
-      to={path}
-      className="flex items-center justify-between rounded-xl border border-stone-200 px-4 py-3 text-sm font-medium text-stone-700 hover:bg-stone-50"
-    >
-      <span>{title}</span>
-
-      <span>→</span>
-    </Link>
-  )
-}
-
-export default Dashboard;

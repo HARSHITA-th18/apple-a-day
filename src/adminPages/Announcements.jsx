@@ -23,18 +23,18 @@ function Announcements() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-[#fbf9f5]">
 
-      <header className="border-b border-stone-200 bg-white px-6 py-6 lg:px-8">
-        <p className="text-sm text-stone-500">
+      <header className="border-b border-[#e6e1d7] bg-[#f4efe6] px-6 py-6 lg:px-8">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#526b59]">
           Communication
         </p>
 
-        <h1 className="mt-1 text-2xl font-bold text-stone-900">
+        <h1 className="mt-1 text-3xl font-bold text-[#1a382b]">
           Announcements
         </h1>
 
-        <p className="mt-1 text-sm text-stone-500">
+        <p className="mt-2 text-sm font-medium text-stone-600">
           Manage announcements shown to customers.
         </p>
       </header>
@@ -44,7 +44,7 @@ function Announcements() {
 
         <div className="mb-6 flex justify-end">
           <button
-            className="rounded-xl bg-stone-900 px-4 py-2.5 text-sm font-semibold text-white"
+            className="rounded-lg bg-[#1a382b] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#274c3b]"
           >
             + New Announcement
           </button>
@@ -57,7 +57,7 @@ function Announcements() {
 
             <div
               key={item.id}
-              className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm"
+              className="rounded-xl border border-[#e6e1d7] bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
             >
 
               <div className="flex items-start justify-between gap-4">

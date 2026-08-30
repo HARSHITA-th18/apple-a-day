@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import AppRoutes from "./routes/AppRoutes";
 import { observeAuthState } from "./firebase/auth";
 import { getUserProfile } from "./firebase/firestore";
+
 import {
   setUser,
   clearUser,
@@ -15,25 +16,35 @@ function App() {
 
   useEffect(() => {
     const unsubscribe = observeAuthState(async (user) => {
-      if (user) {
-        const profile = await getUserProfile(user.uid);
+      try {
+        if (user) {
+          const profile = await getUserProfile(user.uid);
 
-        if (profile) {
-          dispatch(
-            setUser({
-              uid: user.uid,
-              email: user.email,
-              ...profile,
-            })
-          );
+          if (profile) {
+            dispatch(
+              setUser({
+                uid: user.uid,
+                email: user.email,
+                ...profile,
+              })
+            );
+          } else {
+            dispatch(
+              setUser({
+                uid: user.uid,
+                email: user.email,
+              })
+            );
+          }
         } else {
           dispatch(clearUser());
         }
-      } else {
+      } catch (error) {
+        console.error("Authentication error:", error);
         dispatch(clearUser());
+      } finally {
+        dispatch(setLoading(false));
       }
-
-      dispatch(setLoading(false));
     });
 
     return () => unsubscribe();

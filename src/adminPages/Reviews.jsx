@@ -15,19 +15,19 @@ function Reviews() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-[#fbf9f5]">
 
-      <header className="border-b border-stone-200 bg-white px-6 py-6 lg:px-8">
+      <header className="border-b border-[#e6e1d7] bg-[#f4efe6] px-6 py-6 lg:px-8">
 
-        <p className="text-sm text-stone-500">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#526b59]">
           Customer Feedback
         </p>
 
-        <h1 className="mt-1 text-2xl font-bold text-stone-900">
+        <h1 className="mt-1 text-3xl font-bold text-[#1a382b]">
           Reviews
         </h1>
 
-        <p className="mt-1 text-sm text-stone-500">
+        <p className="mt-2 text-sm font-medium text-stone-600">
           View ratings and feedback from customers.
         </p>
 
@@ -42,7 +42,7 @@ function Reviews() {
 
             <div
               key={review.id}
-              className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm"
+              className="rounded-xl border border-[#e6e1d7] bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
             >
 
               <div className="flex items-start justify-between gap-4">

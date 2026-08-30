@@ -11,18 +11,18 @@ function Queue() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-[#fbf9f5]">
 
-      <header className="border-b border-stone-200 bg-white px-6 py-6 lg:px-8">
-        <p className="text-sm text-stone-500">
+      <header className="border-b border-[#e6e1d7] bg-[#f4efe6] px-6 py-6 lg:px-8">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#526b59]">
           Order Processing
         </p>
 
-        <h1 className="mt-1 text-2xl font-bold text-stone-900">
+        <h1 className="mt-1 text-3xl font-bold text-[#1a382b]">
           Smart Queue
         </h1>
 
-        <p className="mt-1 text-sm text-stone-500">
+        <p className="mt-2 text-sm font-medium text-stone-600">
           Manage the current order preparation queue.
         </p>
       </header>
@@ -30,20 +30,20 @@ function Queue() {
 
       <main className="p-6 lg:p-8">
 
-        <div className="mb-6 rounded-2xl border border-stone-200 bg-white p-5">
+        <div className="mb-6 rounded-xl border border-[#e6e1d7] bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
 
             <div>
-              <p className="text-sm text-stone-500">
+              <p className="text-xs font-semibold uppercase tracking-wider text-stone-500">
                 Orders in Queue
               </p>
 
-              <p className="mt-1 text-3xl font-bold text-stone-900">
+              <p className="mt-1 text-4xl font-extrabold text-[#1a382b]">
                 {queue.length}
               </p>
             </div>
 
-            <div className="text-4xl">
+            <div className="text-4xl text-[#5f9670]">
               ☷
             </div>
 
@@ -64,14 +64,14 @@ function Queue() {
 
               <div
                 key={item.token}
-                className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm"
+                className="rounded-xl border border-[#e6e1d7] bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
               >
 
                 <div className="flex flex-col gap-5 md:flex-row md:items-center">
 
                   <div className="flex items-center gap-4">
 
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-stone-900 text-sm font-bold text-white">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#1a382b] text-sm font-bold text-white">
                       {item.token}
                     </div>
 
